@@ -6,7 +6,7 @@ Main idea is to use commonly known and well proven constructions introduced in o
 Constructions have distinguishable appearance and pretend to be a part of the language rather than just functions.
 
 ## Useage
-Just import it as is, but if you want and have enough dare, use special symbol to package like
+Just import it as is, but if you want and have enough dare, use special symbol to package reference like
 ```go
 import π "github.com/Vany/pirog.git"
 ```
@@ -21,7 +21,9 @@ type Person struct {
 }
 
 persons := []Person{{"Vasya", "Pupkin"}, {"Vasya", "Lozhkin"}, {"Salvador", "Dalí"}}
-out := π.MAP(persons, func(p Person) string{ return fmt.Sprintf("%s %s", p.FirstName, p.SecondName)})
+out := π.MAP(persons, func(p Person) string{
+	return fmt.Sprintf("%s %s", p.FirstName, p.SecondName)
+})
 ```
 `out` now is []string containing concatenated names.
 
@@ -41,7 +43,9 @@ artistsMap := map[string]string{
 	"Vasya":"Lozhkin",
 	"Salvador":"Dalí",
 }
-AllLozhkins := π.GREP(π.KEYS(artistsMap), func(in string) string }{ return if artistsMap[in] == "Lozhkin" })
+AllLozhkins := π.GREP(π.KEYS(artistsMap), func(in string) string }{
+	return if artistsMap[in] == "Lozhkin" 
+})
 ```
 `AllLozhkins` will be `[]string{"Vasya"}`
 
@@ -65,7 +69,7 @@ Set of functions, you always want to have.
 ### ToJson(any)string
 Returns json representation of argument or dies.
 ```go
-jsonPersons := π.MAP(persons, func(p Person) string{ return ToJson(p) })
+jsonPersons := π.MAP(persons, func(p Person) string{ return π.ToJson(p) })
 ```
 `jsonPersons` becomes slice of strings contained json representation of `persons` array elements.
 
