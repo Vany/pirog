@@ -66,7 +66,7 @@ artistsMap := map[string]string{
 	"Salvador":"Dalí",
 }
 AllLozhkins := GREP(KEYS(artistsMap), func(in string) string }{
-	return if artistsMap[in] == "Lozhkin" 
+	return artistsMap[in] == "Lozhkin" 
 })
 ```
 `AllLozhkins` will be `[]string{"Vasya"}`
