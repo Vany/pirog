@@ -1,4 +1,5 @@
 ![Test](https://github.com/Vany/pirog/actions/workflows/test.yml/badge.svg)
+![goreport](https://goreportcard.com/badge/github.com/vany/pirog)
 # pirog
 Golang mapreduce primitives and other cool stuff from perl and javascript.
 
