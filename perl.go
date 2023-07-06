@@ -51,9 +51,3 @@ func TERNARY[T any](e bool, a, b T) T {
 		return b
 	}
 }
-
-func MUST(err error) {
-	if err != nil {
-		panic(err)
-	}
-}

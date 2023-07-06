@@ -63,15 +63,23 @@ MUST(json.NewEncoder(buff).Encode(object))
 
 ```
 
+### MUST2 - MUST5 
+Same as must, but returns values number at the end of name is number of the arguments.
+```go
+files := GREP(MUST2(os.ReadDir(".")), func (in os.DirEntry) bool {
+	return !in.IsDir()
+})
+```
+
 ## General purpose functions
 Set of functions, you always want to have.
 
 ### ToJson(any)string
 Returns json representation of argument or dies.
 ```go
-jsonPersons := MAP(persons, func(p Person) string{ return ToJson(p) })
+jsonPeople := MAP(people, func(p Person) string{ return ToJson(p) })
 ```
-`jsonPersons` becomes slice of strings contained json representation of `persons` array elements.
+`jsonPeople` becomes slice of strings contained json representation of `people` array elements.
 
 
 Requests and pull requests are [welcome](https://github.com/Vany/pirog/issues).
