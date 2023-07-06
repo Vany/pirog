@@ -56,7 +56,6 @@ x := REDUCE(1+0i, EXPLODE(6, func(i int) complex128 {
 Explodes number to range of values
 ```go
 smallEnglishLetters := EXPLODE(26, func(in int) string { return string([]byte{byte('a' + in)}) }) {
-}
 ```
 
 ### KEYS(map) array
