@@ -13,7 +13,7 @@ Constructions have distinguishable appearance and pretend to be a part of the la
 ## Useage
 Just import it as is, but if you want and have enough dare, use special symbol to package reference like
 ```go
-import . "github.com/Vany/pirog.git"
+import . "github.com/vany/pirog"
 ```
 Then just use it. 
 
