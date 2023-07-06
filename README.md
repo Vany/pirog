@@ -1,5 +1,9 @@
-![Test](https://github.com/Vany/pirog/actions/workflows/test.yml/badge.svg)
-![goreport](https://goreportcard.com/badge/github.com/vany/pirog)
+[![License](https://img.shields.io/github/license/vany/pirog)](./LICENSE)
+[![tag](https://img.shields.io/github/tag/vany/pirog.svg)](https://github.com/vany/pirog/releases)
+[![Test](https://github.com/Vany/pirog/actions/workflows/test.yml/badge.svg)](https://github.com/Vany/pirog/actions/workflows/test.yml)
+[![goreport](https://goreportcard.com/badge/github.com/vany/pirog)](https://goreportcard.com/badge/github.com/vany/pirog)
+
+
 # pirog
 Golang mapreduce primitives and other cool stuff from perl and javascript.
 
@@ -36,6 +40,24 @@ fakePeople := GREP(out, func(s string) bool {
 })
 ```
 `fakePeople` now is []string and contains just `"Vasya Pupkin"`
+
+### REDUCE(init, array, callback) aggregate
+Takes array and applies callback function to aggregate object and each element of array. Starts from init.
+```go
+x := REDUCE(1+0i, EXPLODE(6, func(i int) complex128 {
+    return 0 + 1i
+}), func(i int, in complex128, acc *complex128) {
+    *acc *= in
+})
+// rounds dot for 3π so result will be -1
+```
+
+### EXPLODE(number, callback) array
+Explodes number to range of values
+```go
+smallEnglishLetters := EXPLODE(26, func(in int) string { return string([]byte{byte('a' + in)}) }) {
+}
+```
 
 ### KEYS(map) array
 Returns just full set of keys from map to use it further

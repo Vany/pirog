@@ -51,3 +51,20 @@ func TERNARY[T any](e bool, a, b T) T {
 		return b
 	}
 }
+
+func REDUCE[IN any, ACC any](init ACC, in []IN, f func(int, IN, *ACC)) *ACC {
+	acc := new(ACC)
+	*acc = init
+	for i, el := range in {
+		f(i, el, acc)
+	}
+	return acc
+}
+
+func EXPLODE[T any](num int, f func(int) T) []T {
+	acc := make([]T, num)
+	for i := 0; i < num; i++ {
+		acc[i] = f(i)
+	}
+	return acc
+}
