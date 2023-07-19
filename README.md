@@ -93,6 +93,21 @@ files := GREP(MUST2(os.ReadDir(".")), func (in os.DirEntry) bool {
 })
 ```
 
+### SWAPPER(array) func
+Same as reflect.Swapper(), generates function of two int params to swap values in specified array
+```go
+arr := []os.File{f1,f2,f3}
+swapFiles := SWAPPER(arr)
+swapFiles(1,2)
+```
+
+### TYPEOK(interface type conversion) bool
+Returns just ok part from conversion, used for checking interface type
+```go
+v := any(os.File{})
+if TYPEOK(v.(os.File)) { ... }
+```
+
 ## General purpose functions
 Set of functions, you always want to have.
 
@@ -102,6 +117,7 @@ Returns json representation of argument or dies.
 jsonPeople := MAP(people, func(p Person) string{ return ToJson(p) })
 ```
 `jsonPeople` becomes slice of strings contained json representation of `people` array elements.
+
 
 
 Requests and pull requests are [welcome](https://github.com/Vany/pirog/issues).
