@@ -78,6 +78,10 @@ Just indicates do we have key in map, or no.
 ### ANYKEY(map) key
 Returns any arbitrary key from map.
 
+### FLATLIST(list of lists) list
+Flaterns list of lists, used when you have MAP in MAP, but need flat list outside.
+
+
 ### MUST(err)
 Validates err for nil and panics other way. When you in CLI or sure that here can not be an error.
 ```go

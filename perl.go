@@ -68,3 +68,12 @@ func EXPLODE[T any](num int, f func(int) T) []T {
 	}
 	return acc
 }
+
+// FLATLIST - flaterns list of lists to just list
+func FLATLIST[T any](arrs [][]T) []T {
+	ret := make([]T, 0, len(arrs))
+	for _, v := range arrs {
+		ret = append(ret, v...)
+	}
+	return ret
+}
