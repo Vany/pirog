@@ -71,12 +71,17 @@ AllLozhkins := GREP(KEYS(artistsMap), func(in string) string }{
 ```
 `AllLozhkins` will be `[]string{"Vasya"}`
 
+### VALUES(map) array
+Returns full set of values from map to use it further
 
 ### HAVEKEY(map, key) bool
 Just indicates do we have key in map, or no.
 
 ### ANYKEY(map) key
 Returns any arbitrary key from map.
+
+### ANYWITHDRAW(map) key, value
+Chooses arbitrary key from map, delete it and return.
 
 ### FLATLIST(list of lists) list
 Flaterns list of lists, used when you have MAP in MAP, but need flat list outside.
