@@ -39,3 +39,40 @@ func SWAPPER[T any](slice []T) func(i, j int) {
 func TYPEOK[T any](_ T, ok bool) bool {
 	return ok
 }
+
+// COPYCHAN - returns function that returns chans attached to source chan
+func COPYCHAN[T any](src chan T) (
+	generator func() (tap chan T, destructor func()),
+	destructor func(),
+) {
+	var chans map[chan T]struct{}
+	done := make(chan struct{})
+
+	go func() {
+		for {
+			select {
+			case msg := <-src:
+				for c, _ := range chans {
+					c <- msg
+				}
+			case <-done:
+				for c, _ := range chans {
+					close(c)
+					delete(chans, c)
+				}
+				return
+			}
+		}
+	}()
+
+	return func() (tap chan T, destructor func()) {
+			ret := make(chan T)
+			chans[ret] = struct{}{}
+			return ret, func() {
+				delete(chans, ret)
+			}
+		},
+		func() {
+			done <- struct{}{}
+		}
+}

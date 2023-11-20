@@ -117,6 +117,17 @@ v := any(os.File{})
 if TYPEOK(v.(os.File)) { ... }
 ```
 
+### COPYCHAN(chan) chan
+Creates copy of chan, all events put in base chan will be copyed to copy. All chan events will be handled properly.
+If copy is closed there must stop copying routine, if original chan will be closed all copies will be closed.
+```go
+for _, w := range workers {
+    w.UseChannel(COPYCHAN(original))
+    ...
+}
+```
+
+
 ## General purpose functions
 Set of functions, you always want to have.
 
@@ -127,6 +138,17 @@ jsonPeople := MAP(people, func(p Person) string{ return ToJson(p) })
 ```
 `jsonPeople` becomes slice of strings contained json representation of `people` array elements.
 
+
+### PutToStruct(storage, object)
+Search storage struct for corresponding typed field and put object pointer here
+```go
+app := &struct {
+	Log logger.Interface
+}
+PutToStruct(app, logger.NewLogger())
+
+app.Log.Log(...)
+```
 
 
 Requests and pull requests are [welcome](https://github.com/Vany/pirog/issues).
