@@ -2,6 +2,7 @@ package pirog
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"reflect"
 )
@@ -25,4 +26,24 @@ func PutToStruct(c any, obj any) {
 			reflect.ValueOf(c).Elem().Field(i).Set(reflect.ValueOf(obj))
 		}
 	}
+}
+
+// ExecuteOnAllFields - On all interface fields run method by name
+func ExecuteOnAllFields(ctx context.Context, a any, mname string) error {
+	v := reflect.ValueOf(a).Elem()
+	for i := 0; i < v.NumField(); i++ {
+		if v.Field(i).IsNil() {
+			continue
+		}
+		f := v.Field(i).Elem()
+		m := f.MethodByName(mname)
+		if !m.IsValid() {
+			continue
+		}
+		ret := m.Call([]reflect.Value{reflect.ValueOf(ctx)})[0]
+		if !ret.IsNil() {
+			return ret.Interface().(error)
+		}
+	}
+	return nil
 }

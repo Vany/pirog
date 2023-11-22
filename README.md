@@ -140,7 +140,7 @@ jsonPeople := MAP(people, func(p Person) string{ return ToJson(p) })
 
 
 ### PutToStruct(storage, object)
-Search storage struct for corresponding typed field and put object pointer here
+Search storage struct for corresponding typed or interfaced field and put object pointer here with correct type.
 ```go
 app := &struct {
 	Log logger.Interface
@@ -149,6 +149,16 @@ PutToStruct(app, logger.NewLogger())
 
 app.Log.Log(...)
 ```
+
+### ExecuteOnAllFields(ctx, storage, "method_name") error
+Executes `method_name(ctx)` on all non nil interface fields in storage, used to initialize application.
+```go
+app := ... {
+	Connection: fancy.NewConnection(cfg)
+}
+ExecuteOnAllFields(ctx, app, "InitStage1")
+```
+
 
 
 Requests and pull requests are [welcome](https://github.com/Vany/pirog/issues).
