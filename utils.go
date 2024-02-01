@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
+	"golang.org/x/sync/errgroup"
 	"reflect"
 )
 
@@ -31,6 +33,8 @@ func PutToStruct(c any, obj any) {
 // ExecuteOnAllFields - On all interface fields run method by name
 func ExecuteOnAllFields(ctx context.Context, a any, mname string) error {
 	v := reflect.ValueOf(a).Elem()
+	wg := errgroup.Group{}
+
 	for i := 0; i < v.NumField(); i++ {
 		if v.Field(i).IsNil() {
 			continue
@@ -40,10 +44,15 @@ func ExecuteOnAllFields(ctx context.Context, a any, mname string) error {
 		if !m.IsValid() {
 			continue
 		}
-		ret := m.Call([]reflect.Value{reflect.ValueOf(ctx)})[0]
-		if !ret.IsNil() {
-			return ret.Interface().(error)
-		}
+		wg.Go(func(i int) func() error {
+			return func() error {
+				ret := m.Call([]reflect.Value{reflect.ValueOf(ctx)})[0]
+				if !ret.IsNil() {
+					return fmt.Errorf("%s => %w", v.Type().Field(i).Name, ret.Interface().(error))
+				}
+				return nil
+			}
+		}(i))
 	}
-	return nil
+	return wg.Wait()
 }
