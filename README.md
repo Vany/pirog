@@ -121,8 +121,10 @@ if TYPEOK(v.(os.File)) { ... }
 Creates copy of chan, all events put in base chan will be copyed to copy. All chan events will be handled properly.
 If copy is closed there must stop copying routine, if original chan will be closed all copies will be closed.
 ```go
-for _, w := range workers {
-    w.UseChannel(COPYCHAN(original))
+func serveClient(original chan T) {
+	c, d := COPYCHAN(original)
+	defer d()
+    w.UseChannel(c)
     ...
 }
 ```
