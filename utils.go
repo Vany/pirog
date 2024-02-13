@@ -16,6 +16,7 @@ func ToJson(in any) string {
 }
 
 // PutToStruct search for corresponding type field in structure and put obj there
+// DEPRECATED
 func PutToStruct(c any, obj any) {
 	ft := reflect.TypeOf(c).Elem()
 	ot := reflect.TypeOf(obj)
