@@ -1,5 +1,7 @@
 package pirog
 
+import "context"
+
 func MUST(err error) {
 	if err != nil {
 		panic(err)
@@ -40,7 +42,15 @@ func TYPEOK[T any](_ T, ok bool) bool {
 	return ok
 }
 
-// COPYCHAN - returns function that returns chans attached to source chan
+// SEND - Sends to channel obeying cancel of context
+func SEND[T any](ctx context.Context, ch chan<- T, val T) {
+	select {
+	case <-ctx.Done():
+	case ch <- val:
+	}
+}
+
+// COPYCHAN - returns function that returns channels attached to source chan
 func COPYCHAN[T any](src chan T) (
 	generator func() (tap chan T, destructor func()),
 	destructor func(),

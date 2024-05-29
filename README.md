@@ -117,6 +117,13 @@ v := any(os.File{})
 if TYPEOK(v.(os.File)) { ... }
 ```
 
+### SEND(ctx, chan, val)
+Send to unbuffered chan, exit if context canceled
+```
+go func() {SEND(ctx, chan, "value"); print("continue execution")}()
+cancel()
+```
+
 ### COPYCHAN(chan) chan
 Creates copy of chan, all events put in base chan will be copyed to copy. All chan events will be handled properly.
 If copy is closed there must stop copying routine, if original chan will be closed all copies will be closed.
@@ -140,18 +147,6 @@ jsonPeople := MAP(people, func(p Person) string{ return ToJson(p) })
 ```
 `jsonPeople` becomes slice of strings contained json representation of `people` array elements.
 
-
-### PutToStruct(storage, object)
-Search storage struct for corresponding typed or interfaced field and put object pointer here with correct type.
-```go
-app := &struct {
-	Log logger.Interface
-}
-PutToStruct(app, logger.NewLogger())
-
-app.Log.Log(...)
-```
-
 ### ExecuteOnAllFields(ctx, storage, "method_name") error
 Executes `method_name(ctx)` on all non nil interface fields in storage, used to initialize application.
 ```go
@@ -160,7 +155,5 @@ app := ... {
 }
 ExecuteOnAllFields(ctx, app, "InitStage1")
 ```
-
-
 
 Requests and pull requests are [welcome](https://github.com/Vany/pirog/issues).

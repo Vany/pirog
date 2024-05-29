@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"testing"
+	"time"
 )
 
 type S1 struct{}
@@ -37,24 +38,38 @@ type App struct {
 
 var TEST_VARIABLE = 0
 
-func TestPutToStruct_AND_ExecuteOnAllFields(t *testing.T) {
+func TestExecuteOnAllFields(t *testing.T) {
 	app := &App{}
-	PutToStruct(app, &S1{})
-	PutToStruct(app, &S2{})
-	PutToStruct(app, os.Stdin)
-	PutToStruct(app, &I1{})
-	PutToStruct(app, &I2{})
-	assert.NotNil(t, app.S1)
-	assert.NotNil(t, app.S2)
-	assert.NotNil(t, app.R)
-	assert.NotNil(t, app.I1)
-	assert.NotNil(t, app.I2)
+	app.S1 = &S1{}
+	app.S2 = &S2{}
+	app.R = os.Stdin
+	app.I1 = &I1{}
+	app.I2 = &I2{}
+
 	assert.NoError(t, ExecuteOnAllFields(context.Background(), app, "InitTest"))
 	assert.Equal(t, 2, TEST_VARIABLE)
 
-	assert.Nil(t, app.I3)
-	PutToStruct(app, &I3{})
-	assert.NotNil(t, app.I3)
+	app.I3 = &I3{}
 	assert.NoError(t, ExecuteOnAllFields(context.Background(), app, "InitTest"))
 	assert.Equal(t, 5, TEST_VARIABLE)
+}
+
+func TestSEND(t *testing.T) {
+	ctx, c := context.WithTimeout(context.Background(), time.Second)
+	ch := make(chan string)
+	gofin := make(chan struct{})
+	gf := func() { gofin <- struct{}{} }
+	summ := 0
+
+	go func() { SEND(ctx, ch, "lala"); summ++; gf() }()
+	assert.Equal(t, 0, summ)
+	<-ch
+	<-gofin
+	assert.Equal(t, 1, summ)
+
+	go func() { SEND(ctx, ch, "lolo"); summ++; gf() }()
+	assert.Equal(t, 1, summ)
+	c()
+	<-gofin
+	assert.Equal(t, 2, summ)
 }
