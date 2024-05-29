@@ -24,7 +24,10 @@ func ExecuteOnAllFields(ctx context.Context, a any, mname string) error {
 		if v.Field(i).IsNil() {
 			continue
 		}
-		f := v.Field(i).Elem()
+		f := v.Field(i)
+		if f.Type().Kind() == reflect.Interface {
+			f = f.Elem()
+		}
 		m := f.MethodByName(mname)
 		if !m.IsValid() {
 			continue

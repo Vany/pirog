@@ -47,11 +47,11 @@ func TestExecuteOnAllFields(t *testing.T) {
 	app.I2 = &I2{}
 
 	assert.NoError(t, ExecuteOnAllFields(context.Background(), app, "InitTest"))
-	assert.Equal(t, 2, TEST_VARIABLE)
+	assert.Equal(t, 3, TEST_VARIABLE)
 
 	app.I3 = &I3{}
 	assert.NoError(t, ExecuteOnAllFields(context.Background(), app, "InitTest"))
-	assert.Equal(t, 5, TEST_VARIABLE)
+	assert.Equal(t, 7, TEST_VARIABLE)
 }
 
 func TestSEND(t *testing.T) {
