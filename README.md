@@ -124,6 +124,13 @@ go func() {SEND(ctx, chan, "value"); print("continue execution")}()
 cancel()
 ```
 
+### NBSEND(chan, val) bool
+Send to unbuffered chan, nonblocking
+```
+if NBSEND(chan, "value") { ... }
+
+```
+
 ### COPYCHAN(chan) chan
 Creates copy of chan, all events put in base chan will be copyed to copy. All chan events will be handled properly.
 If copy is closed there must stop copying routine, if original chan will be closed all copies will be closed.

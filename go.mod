@@ -1,10 +1,10 @@
 module github.com/vany/pirog
 
-go 1.21
+go 1.22
 
 require (
-	github.com/stretchr/testify v1.8.4
-	golang.org/x/sync v0.6.0
+	github.com/stretchr/testify v1.9.0
+	golang.org/x/sync v0.7.0
 )
 
 require (

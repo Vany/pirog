@@ -50,6 +50,16 @@ func SEND[T any](ctx context.Context, ch chan<- T, val T) {
 	}
 }
 
+// NBSEND - Sends to channel nonblockingly
+func NBSEND[T any](ch chan<- T, val T) bool {
+	select {
+	case ch <- val:
+		return true
+	default:
+		return false
+	}
+}
+
 // COPYCHAN - returns function that returns channels attached to source chan
 func COPYCHAN[T any](src chan T) (
 	generator func() (tap chan T, destructor func()),

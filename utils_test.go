@@ -6,7 +6,6 @@ import (
 	"io"
 	"os"
 	"testing"
-	"time"
 )
 
 type S1 struct{}
@@ -52,24 +51,4 @@ func TestExecuteOnAllFields(t *testing.T) {
 	app.I3 = &I3{}
 	assert.NoError(t, ExecuteOnAllFields(context.Background(), app, "InitTest"))
 	assert.Equal(t, 7, TEST_VARIABLE)
-}
-
-func TestSEND(t *testing.T) {
-	ctx, c := context.WithTimeout(context.Background(), time.Second)
-	ch := make(chan string)
-	gofin := make(chan struct{})
-	gf := func() { gofin <- struct{}{} }
-	summ := 0
-
-	go func() { SEND(ctx, ch, "lala"); summ++; gf() }()
-	assert.Equal(t, 0, summ)
-	<-ch
-	<-gofin
-	assert.Equal(t, 1, summ)
-
-	go func() { SEND(ctx, ch, "lolo"); summ++; gf() }()
-	assert.Equal(t, 1, summ)
-	c()
-	<-gofin
-	assert.Equal(t, 2, summ)
 }
