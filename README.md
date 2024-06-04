@@ -119,28 +119,61 @@ if TYPEOK(v.(os.File)) { ... }
 
 ### SEND(ctx, chan, val)
 Send to unbuffered chan, exit if context canceled
-```
+```go
 go func() {SEND(ctx, chan, "value"); print("continue execution")}()
 cancel()
 ```
 
 ### NBSEND(chan, val) bool
 Send to unbuffered chan, nonblocking
-```
+```go
 if NBSEND(chan, "value") { ... }
 
 ```
 
-### COPYCHAN(chan) chan
-Creates copy of chan, all events put in base chan will be copyed to copy. All chan events will be handled properly.
-If copy is closed there must stop copying routine, if original chan will be closed all copies will be closed.
+### RECV(ctx, chan) val, bool
+Receive blockingly from channel, exit if context cancelled
+```go
+if val, ok := RECV(ctx, ch); ok {
+	...
+}
+```
+
+### WAIT(ctx, chan, cb())
+Nonparallel promise on channel.
+```go
+go WAIT(ctx, ch, func(T) {
+    ...	
+})
+```
+
+
+### FANOUT(chan) copyer()
+Creates copyer of chan, all events put in base chan will be copied to a copies. All chan events will be handled properly.
+If original chan closing  all copies will be closed.
 ```go
 func serveClient(original chan T) {
-	c, d := COPYCHAN(original)
-	defer d()
-    w.UseChannel(c)
-    ...
+	generator := FANOUT(original)
+    for ... {
+        c, d := generator()
+        defer d()
+        go finc(){ for msg := range c { ... ; ... ; d() }  }()
+        ...
+    }
 }
+```
+
+### FANIN(chan) generator(), destructor()
+Creates attacher to sink chan. All messages from attached chans will be copied to main chan.
+```go
+    generator, destructor  := FANIN(ch)
+    go func(){ for range ch {  ...  } }()
+    c1, c2 ,c3 := generator(), generator(), generator() 
+	c1 <- msg1
+	c2 <- msg2
+	...
+	destructor()
+	
 ```
 
 

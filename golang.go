@@ -60,39 +60,75 @@ func NBSEND[T any](ch chan<- T, val T) bool {
 	}
 }
 
-// COPYCHAN - returns function that returns channels attached to source chan
-func COPYCHAN[T any](src chan T) (
-	generator func() (tap chan T, destructor func()),
-	destructor func(),
-) {
-	var chans map[chan T]struct{}
-	done := make(chan struct{})
+// RECV - receive from chan obeying context
+func RECV[T any](ctx context.Context, ch <-chan T) (T, bool) {
+	var NIL T
+	select {
+	case <-ctx.Done():
+		return NIL, false
+	case val, ok := <-ch:
+		return val, ok
+	}
+}
 
+// WAIT - for message on chan and do action once, obeying context
+func WAIT[T any](ctx context.Context, ch <-chan T, cb func(T)) {
+	select {
+	case <-ctx.Done():
+	case val, ok := <-ch:
+		if ok {
+			cb(val)
+		}
+	}
+}
+
+// FANOUT - returns function that returns channels attached to source chan
+func FANOUT[T any](src <-chan T) (
+	generator func() (tap <-chan T, destructor func()),
+) {
+	chans := make(map[chan T]struct{})
 	go func() {
-		for {
-			select {
-			case msg := <-src:
-				for c, _ := range chans {
-					c <- msg
-				}
-			case <-done:
-				for c, _ := range chans {
-					close(c)
-					delete(chans, c)
-				}
-				return
+		for msg := range src {
+			for c := range chans {
+				c <- msg
 			}
+		}
+		for c := range chans {
+			close(c)
 		}
 	}()
 
-	return func() (tap chan T, destructor func()) {
-			ret := make(chan T)
-			chans[ret] = struct{}{}
-			return ret, func() {
-				delete(chans, ret)
-			}
-		},
-		func() {
-			done <- struct{}{}
+	return func() (tap <-chan T, destructor func()) {
+		ret := make(chan T)
+		chans[ret] = struct{}{}
+		return ret, func() {
+			delete(chans, ret)
+			close(ret)
+		}
+	}
+}
+
+// FANIN - returns channel generator that push all incoming into one channel
+func FANIN[T any](src chan T) (generator func() chan T, destructor func()) {
+	done := make(chan struct{})
+	return func() chan T {
+			tap := make(chan T)
+			go func() {
+				for {
+					select {
+					case <-done:
+						return
+					case msg, ok := <-tap:
+						if !ok {
+							return
+						}
+						src <- msg
+					}
+				}
+			}()
+			return tap
+		}, func() {
+			close(done)
+			close(src)
 		}
 }
