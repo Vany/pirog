@@ -1,6 +1,8 @@
 package pirog
 
-import "context"
+import (
+	"context"
+)
 
 func MUST(err error) {
 	if err != nil {

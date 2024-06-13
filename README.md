@@ -196,4 +196,17 @@ app := ... {
 ExecuteOnAllFields(ctx, app, "InitStage1")
 ```
 
+### DEBUG
+Constant based on debug build tag. Code in if statement will not be compiled if DEBUG is false (debug tag not set)
+```go
+if pirog.DEBUG { logger.Debug(<some toughly evaluted info you want not to evauate >) }
+```
+```bash
+go run -tags debug programm.go
+```
+
+
+
+
+
 Requests and pull requests are [welcome](https://github.com/Vany/pirog/issues).
