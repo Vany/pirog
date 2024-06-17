@@ -81,3 +81,12 @@ func TestFANIN(t *testing.T) {
 	done()
 	<-final
 }
+
+func TestCHANGEWATCHER(t *testing.T) {
+	w := CHANGEWATCHER("main", "")
+	assert.False(t, w(""))
+	assert.True(t, w("lalala"))
+	assert.False(t, w("lalala"))
+	assert.True(t, w("lololo"))
+	assert.False(t, w("lololo"))
+}

@@ -128,7 +128,6 @@ cancel()
 Send to unbuffered chan, nonblocking
 ```go
 if NBSEND(chan, "value") { ... }
-
 ```
 
 ### RECV(ctx, chan) val, bool
@@ -205,8 +204,15 @@ if pirog.DEBUG { logger.Debug(<some toughly evaluted info you want not to evauat
 go run -tags debug programm.go
 ```
 
-
-
+### CHANGEWATCHER(name,var) func(var)
+Returns if variable was changed from previous call. If DEBUG is set, prints point in code to stdout. 
+```go
+cw := CHANGEWATCHER("mainchangewatcher", "")
+for {
+	// some code that can change variable
+	_ = DEBUG && cw(variable)
+}
+```
 
 
 Requests and pull requests are [welcome](https://github.com/Vany/pirog/issues).

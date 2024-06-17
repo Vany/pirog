@@ -2,6 +2,8 @@ package pirog
 
 import (
 	"context"
+	"fmt"
+	"runtime"
 )
 
 func MUST(err error) {
@@ -133,4 +135,22 @@ func FANIN[T any](src chan T) (generator func() chan T, destructor func()) {
 			close(done)
 			close(src)
 		}
+}
+
+type CHANGEWATCHERFUNC[T comparable] func(n T) bool
+
+// CHANGEWATCHER - was variabe changed from previous call
+func CHANGEWATCHER[T comparable](name string, o T) CHANGEWATCHERFUNC[T] {
+	return func(n T) bool {
+		if o != n {
+			if DEBUG {
+				_, file, line, _ := runtime.Caller(1)
+				fmt.Printf("<=>%s<=> %s:%d ", name, file, line)
+				println(n)
+			}
+			o = n
+			return true
+		}
+		return false
+	}
 }
