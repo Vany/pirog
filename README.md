@@ -87,6 +87,12 @@ Chooses arbitrary key from map, delete it and return.
 Flaterns list of lists, used when you have MAP in MAP, but need flat list outside.
 
 
+### COALESCE(args...) value
+Return first not empty value from args. Caution, all arguments will be evaluated.
+```go
+COALESCE("", "", "10", "", "213231243") == "10"
+```
+
 ### MUST(err)
 Validates err for nil and panics other way. When you in CLI or sure that here can not be an error.
 ```go
@@ -189,11 +195,24 @@ jsonPeople := MAP(people, func(p Person) string{ return ToJson(p) })
 ### ExecuteOnAllFields(ctx, storage, "method_name") error
 Executes `method_name(ctx)` on all non nil interface fields in storage, used to initialize application.
 ```go
-app := ... {
-	Connection: fancy.NewConnection(cfg)
+app := App{
+	Connection: fancy.NewConnection(cfg),
 }
-ExecuteOnAllFields(ctx, app, "InitStage1")
+ExecuteOnAllFields(ctx, &app, "InitStage1")
 ```
+
+### InjectComponents(storage) 
+Takes all *struct and interface fields and puts it in its fields found fields by type.
+```go
+type Component struct { L *Logger `inject:"logger"`}
+app := App{
+    Logger:    new(Logger), `injectable:"logger"`
+	Component: new(Component),	
+}
+InjectComponents(&app)
+app.Component.L.Info("Component now have logger injected")
+```
+
 
 ### DEBUG
 Constant based on debug build tag. Code in if statement will not be compiled if DEBUG is false (debug tag not set)

@@ -106,3 +106,14 @@ func FLATLIST[T any](arrs [][]T) []T {
 	}
 	return ret
 }
+
+// COALESCE - return first non zero(false) value
+func COALESCE[T comparable](in ...T) T {
+	var zero T
+	for _, t := range in {
+		if t != zero {
+			return t
+		}
+	}
+	return zero
+}
