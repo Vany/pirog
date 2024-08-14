@@ -41,12 +41,8 @@ func VALUES[K comparable, V any](in map[K]V) []V {
 
 // HAVEKEY - Just indicates do we have key in map, or no.
 func HAVEKEY[K comparable, V any](in map[K]V, key K) bool {
-	for k := range in {
-		if k == key {
-			return true
-		}
-	}
-	return false
+	_, have := in[key]
+	return have
 }
 
 // ANYKEY - Returns any arbitrary key from map.

@@ -144,6 +144,14 @@ if val, ok := RECV(ctx, ch); ok {
 }
 ```
 
+### NBRECV(chan) val, bool
+Receive non blockingly from channel
+```go
+if val, ok := NBRECV(ch); ok {
+	...
+}
+```
+
 ### WAIT(ctx, chan, cb())
 Nonparallel promise on channel.
 ```go
@@ -151,7 +159,6 @@ go WAIT(ctx, ch, func(T) {
     ...	
 })
 ```
-
 
 ### FANOUT(chan) copyer()
 Creates copyer of chan, all events put in base chan will be copied to a copies. All chan events will be handled properly.
