@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"runtime"
 	"strings"
+	"sync"
 )
 
 func MUST(err error) {
@@ -174,7 +175,7 @@ func CHANGEWATCHER[T comparable](name string, o T) CHANGEWATCHERFUNC[T] {
 type COMMENTABLETYPE[T any] struct{ T T }
 
 func COMMENTABLE[T any](in T) COMMENTABLETYPE[T] { return COMMENTABLETYPE[T]{T: in} }
-func (C COMMENTABLETYPE[T]) MarshalYAML() (interface{}, error) {
+func (C *COMMENTABLETYPE[T]) MarshalYAML() (interface{}, error) {
 	t := reflect.TypeOf(C.T)
 	v := reflect.ValueOf(C.T)
 	if t.Kind() == reflect.Ptr {
@@ -203,4 +204,58 @@ func (C COMMENTABLETYPE[T]) MarshalYAML() (interface{}, error) {
 	default:
 		return C.T, nil
 	}
+}
+
+type SUBSCRIPTION[A comparable, T any] struct {
+	sync.Mutex
+	M map[A][]chan T
+}
+
+func NewSUBSCRIPTION[A comparable, T any]() *SUBSCRIPTION[A, T] {
+	return &SUBSCRIPTION[A, T]{M: make(map[A][]chan T)}
+}
+
+func (s *SUBSCRIPTION[A, T]) Open(id A) {
+	s.Lock()
+	if _, ok := s.M[id]; !ok {
+		s.M[id] = nil
+	}
+	s.Unlock()
+}
+
+func (s *SUBSCRIPTION[A, T]) Subscribe(id A) chan T {
+	c := make(chan T)
+	s.Lock()
+	if _, ok := s.M[id]; !ok {
+		c = nil
+	} else {
+		s.M[id] = append(s.M[id], c)
+	}
+	s.Unlock()
+	return c
+}
+
+func (s *SUBSCRIPTION[A, T]) NBNotify(id A, data T) {
+	s.Lock()
+	for _, c := range s.M[id] {
+		_ = NBSEND(c, data)
+	}
+	s.Unlock()
+}
+
+func (s *SUBSCRIPTION[A, T]) Notify(id A, data T) {
+	s.Lock()
+	for _, c := range s.M[id] {
+		c <- data
+	}
+	s.Unlock()
+}
+
+func (s *SUBSCRIPTION[A, T]) Close(id A) {
+	s.Lock()
+	for _, c := range s.M[id] {
+		close(c)
+	}
+	delete(s.M, id)
+	s.Unlock()
 }

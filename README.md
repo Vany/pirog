@@ -240,5 +240,17 @@ for {
 }
 ```
 
+### Subscription SubscriptionObject := NewSubscription()
+Subscribe to some type of event or object ids.
+```go
+s := NewSubscription[string, any]()
+s.Open("now")
+achan, bchan :=  s.Subscribe("now"), s.Subscribe("now") 
+s.NBNotify("now", time.Now())
+... <- achan ...
+s.Close("Now")
+... _, closed := <- bchan
+```
+
 
 Requests and pull requests are [welcome](https://github.com/Vany/pirog/issues).
