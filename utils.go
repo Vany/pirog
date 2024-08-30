@@ -81,8 +81,12 @@ func InjectComponents(a any) {
 				continue
 			}
 			tag = COALESCE(tag, tt.Name)
-			if vv, ok := fields[tag]; !ok {
-				panic(`want inject unexistent field name "` + tag + `" into "` + t.Name + "." + tt.Name + `"`)
+			if vv, ok := fields[tag]; !ok && ff.IsZero() {
+				panic(`want inject unexistent field name into empty field"` + tag + `" into "` + t.Name + "." + tt.Name + `"`)
+			} else if !ok {
+				if DEBUG {
+					println("> ", t.Name+"."+tt.Name, "<< Already have a value and have no candidates")
+				}
 			} else {
 				if DEBUG {
 					println("> ", t.Name+"."+tt.Name, "<<", tag, vv.Type().Name())
