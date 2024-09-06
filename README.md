@@ -220,6 +220,14 @@ InjectComponents(&app)
 app.Component.L.Info("Component now have logger injected")
 ```
 
+### CleanComponents(storage)
+Uninject (set nil) all components (tagged by inject or injectable)
+```go
+func (c *Component)Stop(ctx context.Context) error
+    CleanComponents(&c)
+    return nil
+}
+```
 
 ### DEBUG
 Constant based on debug build tag. Code in if statement will not be compiled if DEBUG is false (debug tag not set)

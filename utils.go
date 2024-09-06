@@ -100,3 +100,17 @@ func InjectComponents(a any) {
 		}
 	}
 }
+
+func CleanComponents(a any) {
+	v := ValueOf(a).Elem()
+	n := ValueOf(nil)
+	for i := 0; i < v.NumField(); i++ {
+		t := v.Type().Field(i)
+		if _, have := t.Tag.Lookup("injectable"); have {
+		} else if _, have := t.Tag.Lookup("inject"); have {
+		} else {
+			continue
+		}
+		v.Field(i).Set(n)
+	}
+}
