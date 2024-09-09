@@ -17,7 +17,7 @@ import . "github.com/vany/pirog"
 ```
 Then just use it. 
 
-### MAP(array, callback) array
+### MAP(array, callback) array  // the cause of this lib
 This is part of mapreduce and almost full copy of perl's map. It transforms input array to output array with callback function.
 ```go
 type Person struct {
@@ -32,7 +32,7 @@ out := MAP(people, func(p Person) string{
 ```
 `out` now is []string containing concatenated names.
 
-### GREP(array, callback) array
+### GREP(array, callback) array  // from perl
 This is filter, that leaves only that elements that trigerrs callback function to return true
 ```go
 fakePeople := GREP(out, func(s string) bool {
@@ -41,7 +41,7 @@ fakePeople := GREP(out, func(s string) bool {
 ```
 `fakePeople` now is []string and contains just `"Vasya Pupkin"`
 
-### REDUCE(init, array, callback) aggregate
+### REDUCE(init, array, callback) aggregate  // should be in perl
 Takes array and applies callback function to aggregate object and each element of array. Starts from init.
 ```go
 x := REDUCE(1+0i, EXPLODE(6, func(i int) complex128 {
@@ -52,13 +52,13 @@ x := REDUCE(1+0i, EXPLODE(6, func(i int) complex128 {
 // rounds dot for 3π so result will be -1
 ```
 
-### EXPLODE(number, callback) array
+### EXPLODE(number, callback) array  // syntax sugar
 Explodes number to range of values
 ```go
 smallEnglishLetters := EXPLODE(26, func(in int) string { return string([]byte{byte('a' + in)}) }) {
 ```
 
-### KEYS(map) array
+### KEYS(map) array  // from perl
 Returns just full set of keys from map to use it further
 ```go
 artistsMap := map[string]string{
@@ -71,23 +71,23 @@ AllLozhkins := GREP(KEYS(artistsMap), func(in string) string }{
 ```
 `AllLozhkins` will be `[]string{"Vasya"}`
 
-### VALUES(map) array
+### VALUES(map) array  // from perl
 Returns full set of values from map to use it further
 
-### HAVEKEY(map, key) bool
+### HAVEKEY(map, key) bool  // syntax sugar
 Just indicates do we have key in map, or no.
 
-### ANYKEY(map) key
+### ANYKEY(map) key  // syntax sugar
 Returns any arbitrary key from map.
 
-### ANYWITHDRAW(map) key, value
+### ANYWITHDRAW(map) key, value  // common operation with mapped job queue  
 Chooses arbitrary key from map, delete it and return.
 
-### FLATLIST(list of lists) list
+### FLATLIST(list of lists) list  // helper for map
 Flaterns list of lists, used when you have MAP in MAP, but need flat list outside.
 
 
-### COALESCE(args...) value
+### COALESCE(args...) value  // syntax sugar
 Return first not empty value from args. Caution, all arguments will be evaluated.
 ```go
 COALESCE("", "", "10", "", "213231243") == "10"
@@ -108,7 +108,7 @@ files := GREP(MUST2(os.ReadDir(".")), func (in os.DirEntry) bool {
 })
 ```
 
-### SWAPPER(array) func
+### SWAPPER(array) func 
 Same as reflect.Swapper(), generates function of two int params to swap values in specified array
 ```go
 arr := []os.File{f1,f2,f3}
@@ -116,27 +116,27 @@ swapFiles := SWAPPER(arr)
 swapFiles(1,2)
 ```
 
-### TYPEOK(interface type conversion) bool
+### TYPEOK(interface type conversion) bool  // syntax sugar
 Returns just ok part from conversion, used for checking interface type
 ```go
 v := any(os.File{})
 if TYPEOK(v.(os.File)) { ... }
 ```
 
-### SEND(ctx, chan, val)
+### SEND(ctx, chan, val)  // hidden select
 Send to unbuffered chan, exit if context canceled
 ```go
 go func() {SEND(ctx, chan, "value"); print("continue execution")}()
 cancel()
 ```
 
-### NBSEND(chan, val) bool
+### NBSEND(chan, val) bool  // hidden select
 Send to unbuffered chan, nonblocking
 ```go
 if NBSEND(chan, "value") { ... }
 ```
 
-### RECV(ctx, chan) val, bool
+### RECV(ctx, chan) val, bool  // hidden select
 Receive blockingly from channel, exit if context cancelled
 ```go
 if val, ok := RECV(ctx, ch); ok {
@@ -144,7 +144,7 @@ if val, ok := RECV(ctx, ch); ok {
 }
 ```
 
-### NBRECV(chan) val, bool
+### NBRECV(chan) val, bool  // hidden select
 Receive non blockingly from channel
 ```go
 if val, ok := NBRECV(ch); ok {
@@ -152,7 +152,7 @@ if val, ok := NBRECV(ch); ok {
 }
 ```
 
-### WAIT(ctx, chan, cb())
+### WAIT(ctx, chan, cb())  // hidden select
 Nonparallel promise on channel.
 ```go
 go WAIT(ctx, ch, func(T) {
@@ -160,7 +160,7 @@ go WAIT(ctx, ch, func(T) {
 })
 ```
 
-### FANOUT(chan) copyer()
+### FANOUT(chan) copyer() // closure with channels
 Creates copyer of chan, all events put in base chan will be copied to a copies. All chan events will be handled properly.
 If original chan closing  all copies will be closed.
 ```go
@@ -175,7 +175,7 @@ func serveClient(original chan T) {
 }
 ```
 
-### FANIN(chan) generator(), destructor()
+### FANIN(chan) generator(), destructor()  // closure with channels
 Creates attacher to sink chan. All messages from attached chans will be copied to main chan.
 ```go
     generator, destructor  := FANIN(ch)
@@ -192,14 +192,14 @@ Creates attacher to sink chan. All messages from attached chans will be copied t
 ## General purpose functions
 Set of functions, you always want to have.
 
-### ToJson(any)string
+### ToJson(any)string // syntax sugar
 Returns json representation of argument or dies.
 ```go
 jsonPeople := MAP(people, func(p Person) string{ return ToJson(p) })
 ```
 `jsonPeople` becomes slice of strings contained json representation of `people` array elements.
 
-### ExecuteOnAllFields(ctx, storage, "method_name") error
+### ExecuteOnAllFields(ctx, storage, "method_name") error // reflect cycle for fields
 Executes `method_name(ctx)` on all non nil interface fields in storage, used to initialize application.
 ```go
 app := App{
@@ -208,7 +208,7 @@ app := App{
 ExecuteOnAllFields(ctx, &app, "InitStage1")
 ```
 
-### InjectComponents(storage) 
+### InjectComponents(storage)  // reflect cycle for tagged fields
 Takes all *struct and interface fields and puts it in its fields found fields by type.
 ```go
 type Component struct { L *Logger `inject:"logger"`}
@@ -220,7 +220,7 @@ InjectComponents(&app)
 app.Component.L.Info("Component now have logger injected")
 ```
 
-### CleanComponents(storage)
+### CleanComponents(storage) // reflect cycle 
 Uninject (set nil) all components (tagged by inject or injectable)
 ```go
 func (c *Component)Stop(ctx context.Context) error
@@ -229,7 +229,7 @@ func (c *Component)Stop(ctx context.Context) error
 }
 ```
 
-### DEBUG
+### DEBUG // build dependent constant
 Constant based on debug build tag. Code in if statement will not be compiled if DEBUG is false (debug tag not set)
 ```go
 if pirog.DEBUG { logger.Debug(<some toughly evaluted info you want not to evauate >) }
@@ -248,7 +248,7 @@ for {
 }
 ```
 
-### Subscription SubscriptionObject := NewSubscription()
+### Subscription SubscriptionObject := NewSubscription() // map of arrays of channels with mutex
 Subscribe to some type of event or object ids.
 ```go
 s := NewSubscription[string, any]()
@@ -259,7 +259,7 @@ s.Close("Now")
 ... _, closed := <- bchan
 ```
 
-### REQUEST(req)
+### REQUEST(req)   // struct of request with response channel
 Create answerable request to send it over channel
 ```go
 c <- REQUEST[ReqType, RespType](req).THEN(ctx, func(ctx context.Context, resp RespType) {
