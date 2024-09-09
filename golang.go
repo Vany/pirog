@@ -38,11 +38,7 @@ func MUST5[T1 any, T2 any, T3 any, T4 any](a1 T1, a2 T2, a3 T3, a4 T4, err error
 
 // SWAPPER - same as reflect.Swapper, but template
 func SWAPPER[T any](slice []T) func(i, j int) {
-	return func(i, j int) {
-		mid := slice[i]
-		slice[i] = slice[j]
-		slice[j] = mid
-	}
+	return func(i, j int) { slice[i], slice[j] = slice[j], slice[i] }
 }
 
 // TYPEOK - strip value from explicit interface type conversion
@@ -70,10 +66,10 @@ func NBSEND[T any](ch chan<- T, val T) bool {
 
 // RECV - receive from chan obeying context
 func RECV[T any](ctx context.Context, ch <-chan T) (T, bool) {
-	var NIL T
+	var zero T
 	select {
 	case <-ctx.Done():
-		return NIL, false
+		return zero, false
 	case val, ok := <-ch:
 		return val, ok
 	}
@@ -81,12 +77,12 @@ func RECV[T any](ctx context.Context, ch <-chan T) (T, bool) {
 
 // NBRECV - receive from chan obeying context
 func NBRECV[T any](ch <-chan T) (T, bool) {
-	var NIL T
+	var zero T
 	select {
 	case val, ok := <-ch:
 		return val, ok
 	default:
-		return NIL, false
+		return zero, false
 	}
 }
 
@@ -111,7 +107,7 @@ func FANOUT[T any](src <-chan T) (
 	go func() {
 		for msg := range src {
 			for c := range chans {
-				c <- msg
+				NBSEND(c, msg)
 			}
 		}
 		for c := range chans {
@@ -215,42 +211,6 @@ func NewSUBSCRIPTION[A comparable, T any]() *SUBSCRIPTION[A, T] {
 	return &SUBSCRIPTION[A, T]{M: make(map[A][]chan T)}
 }
 
-func (s *SUBSCRIPTION[A, T]) Open(id A) {
-	s.Lock()
-	if _, ok := s.M[id]; !ok {
-		s.M[id] = nil
-	}
-	s.Unlock()
-}
-
-func (s *SUBSCRIPTION[A, T]) Subscribe(id A) chan T {
-	c := make(chan T)
-	s.Lock()
-	if _, ok := s.M[id]; !ok {
-		c = nil
-	} else {
-		s.M[id] = append(s.M[id], c)
-	}
-	s.Unlock()
-	return c
-}
-
-func (s *SUBSCRIPTION[A, T]) NBNotify(id A, data T) {
-	s.Lock()
-	for _, c := range s.M[id] {
-		_ = NBSEND(c, data)
-	}
-	s.Unlock()
-}
-
-func (s *SUBSCRIPTION[A, T]) Notify(id A, data T) {
-	s.Lock()
-	for _, c := range s.M[id] {
-		c <- data
-	}
-	s.Unlock()
-}
-
 func (s *SUBSCRIPTION[A, T]) Close(id A) {
 	s.Lock()
 	for _, c := range s.M[id] {
@@ -258,4 +218,57 @@ func (s *SUBSCRIPTION[A, T]) Close(id A) {
 	}
 	delete(s.M, id)
 	s.Unlock()
+}
+
+func (s *SUBSCRIPTION[A, T]) Notify(id A, data T) {
+	s.Lock()
+	if !HAVEKEY(s.M, id) {
+		s.M[id] = nil
+	}
+	var zero A
+	for _, c := range append(s.M[id], s.M[zero]...) {
+		_ = NBSEND(c, data)
+	}
+	s.Unlock()
+}
+
+func (s *SUBSCRIPTION[A, T]) Subscribe(id A) chan T {
+	c := make(chan T)
+	s.Lock()
+	s.M[id] = append(s.M[id], c)
+	s.Unlock()
+	return c
+}
+
+func (s *SUBSCRIPTION[A, T]) UnSubscribe(id A, c chan T) {
+	s.Lock()
+	s.M[id] = GREP(s.M[id], func(in chan T) bool { return in != c })
+	if s.M[id] == nil {
+		delete(s.M, id)
+	}
+	s.Unlock()
+}
+
+type REQUESTTYPE[REQ any, RES any] struct {
+	REQ REQ
+	RES chan RES
+}
+
+func REQUEST[REQ any, RES any](req REQ) REQUESTTYPE[REQ, RES] {
+	return REQUESTTYPE[REQ, RES]{REQ: req, RES: make(chan RES)}
+}
+
+func (r REQUESTTYPE[REQ, RES]) RESPOND(ctx context.Context, res RES) REQUESTTYPE[REQ, RES] {
+	SEND(ctx, r.RES, res)
+	return r
+}
+
+func (r REQUESTTYPE[REQ, RES]) SEND(ctx context.Context, c chan REQUESTTYPE[REQ, RES]) REQUESTTYPE[REQ, RES] {
+	SEND(ctx, c, r)
+	return r
+}
+
+func (r REQUESTTYPE[REQ, RES]) THEN(ctx context.Context, f func(context.Context, RES)) REQUESTTYPE[REQ, RES] {
+	go func() { WAIT(ctx, r.RES, func(r RES) { f(ctx, r) }) }()
+	return r
 }

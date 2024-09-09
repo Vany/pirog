@@ -3,6 +3,7 @@ package pirog
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
+	"sync"
 	"testing"
 	"time"
 )
@@ -89,4 +90,33 @@ func TestCHANGEWATCHER(t *testing.T) {
 	assert.False(t, w("lalala"))
 	assert.True(t, w("lololo"))
 	assert.False(t, w("lololo"))
+}
+
+func Test_SUBSCRIPTION(t *testing.T) {
+	s := NewSUBSCRIPTION[int, bool]()
+	ok := false
+	start, finish := sync.WaitGroup{}, sync.WaitGroup{}
+	start.Add(1)
+	finish.Add(1)
+	go func() { start.Done(); ok = <-s.Subscribe(10); finish.Done() }()
+	start.Wait()
+	s.Notify(10, true)
+	finish.Wait()
+	assert.True(t, ok)
+}
+
+func Test_REQUESTTYPE(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	c := make(chan REQUESTTYPE[int, int])
+
+	go func() {
+		r := <-c
+		r.RESPOND(ctx, r.REQ+1)
+		cancel()
+	}()
+	ok := false
+	c <- REQUEST[int, int](10).
+		THEN(ctx, func(ctx context.Context, i int) { ok = i == 11 })
+	<-ctx.Done()
+	assert.True(t, ok)
 }

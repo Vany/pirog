@@ -252,13 +252,26 @@ for {
 Subscribe to some type of event or object ids.
 ```go
 s := NewSubscription[string, any]()
-s.Open("now")
 achan, bchan :=  s.Subscribe("now"), s.Subscribe("now") 
-s.NBNotify("now", time.Now())
+s.Notify("now", time.Now())
 ... <- achan ...
 s.Close("Now")
 ... _, closed := <- bchan
 ```
 
+### REQUEST(req)
+Create answerable request to send it over channel
+```go
+c <- REQUEST[ReqType, RespType](req).THEN(ctx, func(ctx context.Context, resp RespType) {
+	// Do something with resp
+})
+
+go func() {
+	r := <- c
+	// calc resp
+	r.RESPOND(ctx, resp)
+} ()
+
+```
 
 Requests and pull requests are [welcome](https://github.com/Vany/pirog/issues).
