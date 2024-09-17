@@ -199,6 +199,13 @@ jsonPeople := MAP(people, func(p Person) string{ return ToJson(p) })
 ```
 `jsonPeople` becomes slice of strings contained json representation of `people` array elements.
 
+### EXEC(ctx, command, stdin) code, stdout, stderr, err
+Same as perl backticks, run external command.
+```go
+/// look at tests ///
+```
+
+
 ### ExecuteOnAllFields(ctx, storage, "method_name") error // reflect cycle for fields
 Executes `method_name(ctx)` on all non nil interface fields in storage, used to initialize application.
 ```go

@@ -1,6 +1,7 @@
 package pirog
 
 import (
+	"bytes"
 	"context"
 	"github.com/stretchr/testify/assert"
 	"io"
@@ -83,4 +84,13 @@ func TestInjectComponents(t *testing.T) {
 
 	assert.NotNil(t, app.I3.(*I3).I1)
 	assert.NotNil(t, app.I3.(*I3).I2)
+}
+
+func TestEXEC(t *testing.T) {
+	ctx := context.Background()
+	code, stdout, stderr, err := EXEC(ctx, "cat", bytes.NewBufferString("lala\nlolo\nlulu\n"))
+	assert.NoError(t, err)
+	assert.Equal(t, 0, code)
+	assert.Equal(t, "lala\nlolo\nlulu\n", stdout.String())
+	assert.Equal(t, "", stderr.String())
 }

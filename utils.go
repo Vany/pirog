@@ -6,13 +6,31 @@ import (
 	"encoding/json"
 	"fmt"
 	"golang.org/x/sync/errgroup"
+	"io"
+	"os/exec"
 	. "reflect"
+	"strings"
 )
 
 func ToJson(in any) string {
 	buff := bytes.Buffer{}
 	MUST(json.NewEncoder(&buff).Encode(in))
 	return buff.String()
+}
+
+func EXEC(ctx context.Context, path string, stdin io.Reader) (code int, stdout, stderr *bytes.Buffer, err error) {
+	args := strings.Split(path, " ")
+	cmd := exec.CommandContext(ctx, args[0], args[1:]...)
+	cmd.Stdin = stdin
+	cmd.Stdout = &bytes.Buffer{}
+	cmd.Stderr = &bytes.Buffer{}
+	if err := cmd.Run(); err == nil {
+		return 0, cmd.Stdout.(*bytes.Buffer), cmd.Stderr.(*bytes.Buffer), nil
+	} else if e, ok := err.(*exec.ExitError); ok {
+		return e.ExitCode(), cmd.Stdout.(*bytes.Buffer), cmd.Stderr.(*bytes.Buffer), err
+	} else {
+		return 0, nil, nil, err
+	}
 }
 
 // ExecuteOnAllFields - On all interface fields run method by name
