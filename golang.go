@@ -249,6 +249,13 @@ func (s *SUBSCRIPTION[A, T]) UnSubscribe(id A, c chan T) {
 	s.Unlock()
 }
 
+func (s *SUBSCRIPTION[A, T]) Has(id A) bool {
+	s.Lock()
+	h := HAVEKEY(s.M, id)
+	s.Unlock()
+	return h
+}
+
 type REQUESTTYPE[REQ any, RES any] struct {
 	REQ REQ
 	RES chan RES
