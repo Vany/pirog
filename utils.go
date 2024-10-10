@@ -36,11 +36,17 @@ func EXEC(ctx context.Context, path string, stdin io.Reader) (code int, stdout, 
 // ExecuteOnAllFields - On all interface fields run method by name
 func ExecuteOnAllFields(ctx context.Context, a any, mname string) error {
 	v := ValueOf(a).Elem()
-	wg := errgroup.Group{}
-
+	eg := errgroup.Group{}
+	ctx, cf := context.WithCancel(ctx)
 	for i := 0; i < v.NumField(); i++ {
 		f := v.Field(i)
-		if f.Type().Kind() != Pointer && f.Type().Kind() != Interface || f.IsNil() {
+		fname := v.Type().Field(i).Name
+		if f.Type().Kind() != Pointer && f.Type().Kind() != Interface {
+			continue
+		} else if f.IsNil() || f.IsZero() {
+			if DEBUG {
+				println("⛌" + fname + "." + mname + "()  is nil")
+			}
 			continue
 		}
 		if f.Type().Kind() == Interface {
@@ -50,17 +56,26 @@ func ExecuteOnAllFields(ctx context.Context, a any, mname string) error {
 		if !m.IsValid() {
 			continue
 		}
-		wg.Go(func(i int) func() error {
-			return func() error {
-				ret := m.Call([]Value{ValueOf(ctx)})[0]
-				if !ret.IsNil() {
-					return fmt.Errorf("%s => %w", v.Type().Field(i).Name, ret.Interface().(error))
+
+		ctxrefl := []Value{ValueOf(ctx)}
+
+		eg.Go(func() error {
+			ret := m.Call(ctxrefl)[0]
+			if !ret.IsNil() {
+				err := ret.Interface().(error)
+				if DEBUG {
+					println("⤬" + fname + "." + mname + "() == " + err.Error())
 				}
-				return nil
+				cf()
+				return fmt.Errorf("%s => %w", v.Type().Field(i).Name, err)
 			}
-		}(i))
+			if DEBUG {
+				println("➡" + fname + "." + mname + "()")
+			}
+			return nil
+		})
 	}
-	return wg.Wait()
+	return eg.Wait()
 }
 
 // InjectComponents - search for corresponding fields in fields and put references there

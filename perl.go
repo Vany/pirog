@@ -1,5 +1,7 @@
 package pirog
 
+import "maps"
+
 // GREP - This is filter, that leaves only that elements that trigerrs callback function to return true
 func GREP[T any](arr []T, f func(T) bool) []T {
 	var accum []T
@@ -64,6 +66,15 @@ func ANYWITHDRAW[K comparable, V any](in map[K]V) (K, V) {
 	var k K
 	var v V
 	return k, v
+}
+
+// MAPCONCAT - returns two maps concatenated
+func MAPCONCAT[T any](a, b map[string]T) (ret map[string]T) {
+	ret = maps.Clone(a)
+	for k, v := range b {
+		ret[k] = v
+	}
+	return ret
 }
 
 // TERNARY - ternary operator

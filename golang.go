@@ -36,6 +36,9 @@ func MUST5[T1 any, T2 any, T3 any, T4 any](a1 T1, a2 T2, a3 T3, a4 T4, err error
 	return a1, a2, a3, a4
 }
 
+// REF - used when constructor is crazy by design
+func REF[T any](in T) *T { return &in }
+
 // SWAPPER - same as reflect.Swapper, but template
 func SWAPPER[T any](slice []T) func(i, j int) {
 	return func(i, j int) { slice[i], slice[j] = slice[j], slice[i] }
@@ -104,11 +107,15 @@ func FANOUT[T any](src <-chan T) (
 	generator func() (tap <-chan T, destructor func()),
 ) {
 	chans := make(map[chan T]struct{})
+	mu := sync.Mutex{}
+	// TODO wrap map in mutex
 	go func() {
 		for msg := range src {
+			mu.Lock()
 			for c := range chans {
 				NBSEND(c, msg)
 			}
+			mu.Unlock()
 		}
 		for c := range chans {
 			close(c)
@@ -117,8 +124,12 @@ func FANOUT[T any](src <-chan T) (
 
 	return func() (tap <-chan T, destructor func()) {
 		ret := make(chan T)
+		mu.Lock()
+		defer mu.Unlock()
 		chans[ret] = struct{}{}
 		return ret, func() {
+			mu.Lock()
+			defer mu.Unlock()
 			delete(chans, ret)
 			close(ret)
 		}

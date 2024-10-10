@@ -108,6 +108,12 @@ files := GREP(MUST2(os.ReadDir(".")), func (in os.DirEntry) bool {
 })
 ```
 
+### REF(value) reference
+Sometime functions return struct, and this struct is located on stack, this function moves this struct into heap;
+```go
+logger := REF(zerolog.New)
+```
+
 ### SWAPPER(array) func 
 Same as reflect.Swapper(), generates function of two int params to swap values in specified array
 ```go
