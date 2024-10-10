@@ -14,9 +14,9 @@ func GREP[T any](arr []T, f func(T) bool) []T {
 
 // MAP - This is part of mapreduce and almost full copy of perl's map. It transforms input array to output array with callback function.
 func MAP[IN any, OUT any](arr []IN, f func(IN) OUT) []OUT {
-	var accum []OUT
-	for _, in := range arr {
-		accum = append(accum, f(in))
+	accum := make([]OUT, len(arr))
+	for i, v := range arr {
+		accum[i] = f(v)
 	}
 	return accum
 }

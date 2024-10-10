@@ -2,6 +2,8 @@ package pirog
 
 import (
 	"errors"
+	"fmt"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -31,4 +33,14 @@ func TestEXPLODEREDUCE(t *testing.T) {
 		return
 	}
 	t.Error("failed")
+}
+
+func Test_MAP(t *testing.T) {
+	arr := []int{1, 2, 3, 4, 5, 6, 7}
+	res := MAP(arr, func(in int) string {
+		return fmt.Sprintf("%d", in)
+	})
+
+	assert.Equal(t, len(arr), len(res))
+	assert.Equal(t, res[5], "6")
 }
