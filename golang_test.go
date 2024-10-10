@@ -35,22 +35,30 @@ func TestFANOUT(t *testing.T) {
 	c1, d1 := g()
 	c2, d2 := g()
 	defer d1()
+	start, finish := sync.WaitGroup{}, sync.WaitGroup{}
+	start.Add(2)
+	finish.Add(2)
+	go func() {
+		start.Done()
+		assert.Equal(t, 10, <-c1)
+		finish.Done()
+	}()
+	go func() {
+		start.Done()
+		assert.Equal(t, 10, <-c2)
+		finish.Done()
+	}()
+	start.Wait()
 	go func() {
 		c <- 10
 	}()
-
-	go func() {
-		assert.Equal(t, 10, <-c1)
-	}()
-	go func() {
-		assert.Equal(t, 10, <-c2)
-	}()
-	<-time.After(100 * time.Millisecond)
+	finish.Wait()
 	d2()
 
 	go func() {
 		c <- 30
 	}()
+
 	assert.Equal(t, 30, <-c1)
 	_, ok := <-c2
 	assert.False(t, ok)
